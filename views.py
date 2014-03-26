@@ -75,18 +75,22 @@ class MainHandler(tornado.web.RequestHandler):
         sendReport(report)
 
 class XlsHandler(tornado.web.RequestHandler):
+    def get_argument(self, name, default=[], strip=True):
+        v = super(XlsHandler, self).get_argument(name, default, strip)
+        if not v:
+            return default
+        return v
+
     def get(self):
         self.render("templates/xls/upload.html")
 
     def post(self):
         start_time = self.get_argument("start_time", "08:00")
         end_time = self.get_argument("end_time", "19:00")
-        if len(start_time) < 5:
-            start_time = "08:00"
-        if len(end_time) < 5:
-            end_time = "19:00"
-
-        print "start_time:%s, end_time: %s " % (start_time, end_time)
+        start_launch_time = self.get_argument("start_launch_time", "11:45")
+        end_launch_time = self.get_argument("end_launch_time", "12:30")
+        work_minutes = self.get_argument("work_minutes", "190")
+        print "start_time:%s, end_time: %s  %s %s %s" % (start_time, end_time, start_launch_time, end_launch_time, work_minutes)
         try:
             fbody = self.request.files.get('file')[0]
             if fbody and fbody.get('content_type') == 'application/vnd.ms-excel':
@@ -94,9 +98,13 @@ class XlsHandler(tornado.web.RequestHandler):
                 print "save file: ", filename
                 with open(filename, "w") as fw:
                     fw.write(fbody.get('body'))
-                out_file, form, origin_form = resolv(filename, "08:00", "19:00")
-            self.render("templates/xls/download.html", form=form, origin_form=origin_form,
-                        start_time = start_time, end_time = end_time, file_url = "/static/out.csv", file_name=out_file)
+                file_name, form, origin_form = resolv(filename, "08:00", "19:00")
+            args = locals()
+            args.pop('self')
+            args['file_url'] = '/static/out.csv'
+            self.render("templates/xls/download.html", **args)
+                        # form=form, origin_form=origin_form,
+                        # start_time = start_time, end_time = end_time, file_url = "/static/out.csv", file_name=file_name)
         except Exception as e:
-            print "ERror file:", e
+            print "Error file:", e
             self.write("failed")

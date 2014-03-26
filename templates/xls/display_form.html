@@ -14,7 +14,7 @@
     <tr>
       {% for j,cell in enumerate(row) %}
         {% if j > 1 %}
-          <td style="color:{{ color(cell, t) }};">{{ cell }} </td>
+          <td style="color:{{ color(cell, t, start_launch_time, end_launch_time, work_minutes) }};">{{ cell }} </td>
         {% else %}
           <td style="color:black;">{{ cell }} </td>
         {% end %}

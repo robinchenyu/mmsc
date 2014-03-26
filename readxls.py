@@ -1,3 +1,4 @@
+#! -*- encoding:utf-8 -*-
 import os
 from datetime import datetime
 import xlrd
@@ -101,7 +102,10 @@ def resolv(file1, start, end):
                                 form_row.append(ms)
                                 origin_row.append('\n'.join([x for x in timelist if len(x) > 3]))
 			f.write("%d\n" % sum1)
-                        form_row.append(sum1)
+                        if rx == 2:
+                                form_row.append(u"总和")
+                        else:
+                                form_row.append(sum1)
                         form.append(form_row)
                         origin_form.append(origin_row)
 
