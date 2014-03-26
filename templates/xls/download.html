@@ -37,10 +37,13 @@
         </ul>
         <div class="tab-content" id="myTabContent">
           <div id="home" class="tab-pane fade">
+            <p> 中午11:45到12:30有打卡记录的标记为<tt style="color:blue;">蓝色</tt> </p>
             {% module Template("display_form.html", form=origin_form, t = "time") %}
           </div>
           <div id="profile" class="tab-pane fade active in">
-            <p> 单位:分， 一天工时小于190分钟的标记为<tt style="color:red;">红色</tt> </p> <a href="{{file_url}}">下载</a>
+            <p> 单位:分， 一天工时小于190分钟的标记为<tt style="color:red;">红色</tt>
+            <a href="{{file_url}}">下载</a>
+            </p>
             {% module Template("display_form.html", form=form, t = "hour") %}
           </div>
           <div id="down1" class="tab-pane fade">
