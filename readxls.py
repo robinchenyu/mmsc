@@ -85,7 +85,7 @@ def resolv(file1, start, end):
 			for cx in xrange( sheet.ncols):
 				cell = sheet.cell_value(rx, cx)
 				if cx <2 or rx < 3:
-					f.write(cell.encode("utf-8"))
+					f.write(cell.encode("GBK"))
 					f.write(",\t")
                                         form_row.append(cell.encode("utf-8"))
                                         origin_row.append(cell.encode("utf-8"))
@@ -122,10 +122,10 @@ if __name__ == '__main__':
 			for cx in xrange( sheet.ncols):
 				cell = sheet.cell_value(rx, cx)
 				if cx < 2 or rx < 3:
-                                        print "row: %d col: %d val: %s" % (rx, cx, cell.encode("utf-8"))
-					f.write(cell.encode("utf-8"))
+                                        print "row: %d col: %d val: %s" % (rx, cx, cell.encode("GBK"))
+					f.write(cell.encode("GBK"))
 					f.write(",\t")
-                                        form_row.append(cell.encode('utf-8'))
+                                        form_row.append(cell.encode('GBK'))
 					continue
 
 				timelist = cell.split('\n')
