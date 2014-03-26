@@ -33,13 +33,14 @@
         <ul class="nav nav-tabs" id="myTab">
           <li class=""><a data-toggle="tab" href="#home">原始数据</a></li>
           <li class="active"><a data-toggle="tab" href="#profile">时间</a></li>
-          <li class=""><a data-toggle="tab" href="#down1">下载</a></li>
+          <li class=""><a data-toggle="tab" href="#down1">重新计算</a></li>
         </ul>
         <div class="tab-content" id="myTabContent">
           <div id="home" class="tab-pane fade">
             {% module Template("display_form.html", form=origin_form, t = "time") %}
           </div>
           <div id="profile" class="tab-pane fade active in">
+            <p> 单位:分， 一天工时小于190分钟的标记为<tt style="color:red;">红色</tt> </p> <a href="{{file_url}}">下载</a>
             {% module Template("display_form.html", form=form, t = "hour") %}
           </div>
           <div id="down1" class="tab-pane fade">
@@ -64,7 +65,6 @@
                   </div>
                 </div>
               </form>
-              <a href="{{file_url}}">{{file_name}}</a>
 
 
             </div>
