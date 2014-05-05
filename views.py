@@ -6,9 +6,9 @@ from Queue import Queue
 import tornado.web
 from tornado import httpclient
 
-from settings import settings, UMA_MMS_URL
+from settings import settings
 from xmlparse import parse_xml
-from readxls import resolv
+# from readxls import resolv
 
 from tornado.log import app_log
 
@@ -76,7 +76,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'text/xml; charset=UTF-8')
         self.render("resp.xml", **resp)
 
-        print("put report")
+        # print("put report")
         self.queue.put(report)
         # self.__sendReport(report)
 
@@ -96,43 +96,43 @@ class MainHandler(tornado.web.RequestHandler):
             print "get new client"
             self.client1 = httpclient.AsyncHTTPClient()
 
-        self.client1.fetch(UMA_MMS_URL, handle_report, method='POST', user_agent='MMSC Simulator', body=msg, headers={'soapAction': '""', 'x-mmsc-msg-from': 'mm7', 'Mime-Version': '1.0', 'Content-Type': 'text/xml; charset=utf-8', 'Content-Transfer-Encoding':'8bit', 'Connection': 'Keep-alive'})
+        self.client1.fetch(settings.get('uma_mms_url'), handle_report, method='POST', user_agent='MMSC Simulator', body=msg, headers={'soapAction': '""', 'x-mmsc-msg-from': 'mm7', 'Mime-Version': '1.0', 'Content-Type': 'text/xml; charset=utf-8', 'Content-Transfer-Encoding':'8bit', 'Connection': 'Keep-alive'})
 
 
-class XlsHandler(tornado.web.RequestHandler):
-    def get_argument(self, name, default=[], strip=True):
-        v = super(XlsHandler, self).get_argument(name, default, strip)
-        if not v:
-            return default
-        return v
+# class XlsHandler(tornado.web.RequestHandler):
+#     def get_argument(self, name, default=[], strip=True):
+#         v = super(XlsHandler, self).get_argument(name, default, strip)
+#         if not v:
+#             return default
+#         return v
 
-    def get(self):
-        self.render("templates/xls/upload.html")
+#     def get(self):
+#         self.render("templates/xls/upload.html")
 
-    def post(self):
-        start_time = self.get_argument("start_time", "08:00")
-        end_time = self.get_argument("end_time", "19:00")
-        start_launch_time = self.get_argument("start_launch_time", "11:45")
-        end_launch_time = self.get_argument("end_launch_time", "12:30")
-        work_minutes = self.get_argument("work_minutes", "190")
-        print "start_time:%s, end_time: %s  %s %s %s" % (start_time, end_time, start_launch_time, end_launch_time, work_minutes)
-        try:
-            fbody = self.request.files.get('file')[0]
-            if fbody and fbody.get('content_type') == 'application/vnd.ms-excel':
-                filename = os.path.join(settings.get('static_path'), fbody.get('filename', 'data.xls'))
-                print "save file: ", filename
-                with open(filename, "w") as fw:
-                    fw.write(fbody.get('body'))
-                file_name, form, origin_form = resolv(filename, "08:00", "19:00")
-            args = locals()
-            args.pop('self')
-            args['file_url'] = '/static/out.csv'
-            self.render("templates/xls/download.html", **args)
-                        # form=form, origin_form=origin_form,
-                        # start_time = start_time, end_time = end_time, file_url = "/static/out.csv", file_name=file_name)
-        except Exception as e:
-            print "Error file:", e
-            self.write("failed")
+#     def post(self):
+#         start_time = self.get_argument("start_time", "08:00")
+#         end_time = self.get_argument("end_time", "19:00")
+#         start_launch_time = self.get_argument("start_launch_time", "11:45")
+#         end_launch_time = self.get_argument("end_launch_time", "12:30")
+#         work_minutes = self.get_argument("work_minutes", "190")
+#         print "start_time:%s, end_time: %s  %s %s %s" % (start_time, end_time, start_launch_time, end_launch_time, work_minutes)
+#         try:
+#             fbody = self.request.files.get('file')[0]
+#             if fbody and fbody.get('content_type') == 'application/vnd.ms-excel':
+#                 filename = os.path.join(settings.get('static_path'), fbody.get('filename', 'data.xls'))
+#                 print "save file: ", filename
+#                 with open(filename, "w") as fw:
+#                     fw.write(fbody.get('body'))
+#                 file_name, form, origin_form = resolv(filename, "08:00", "19:00")
+#             args = locals()
+#             args.pop('self')
+#             args['file_url'] = '/static/out.csv'
+#             self.render("templates/xls/download.html", **args)
+#                         # form=form, origin_form=origin_form,
+#                         # start_time = start_time, end_time = end_time, file_url = "/static/out.csv", file_name=file_name)
+#         except Exception as e:
+#             print "Error file:", e
+#             self.write("failed")
 
 class WasHandler(tornado.web.RequestHandler):
 
