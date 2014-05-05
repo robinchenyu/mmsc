@@ -1,13 +1,17 @@
 #! -*- encoding: utf-8 -*-
 import uuid
 import os
+from Queue import Queue
 
 import tornado.web
 from tornado import httpclient
 
-from settings import settings
+from settings import settings, UMA_MMS_URL
 from xmlparse import parse_xml
 from readxls import resolv
+
+from tornado.log import app_log
+
 
 def reportMsg(msg):
     dic = msg
@@ -17,15 +21,6 @@ def reportMsg(msg):
     msgTmpl = '<?xml version="1.0" encoding="GB2312"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Header><mm7:TransactionID xmlns:mm7="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-6-MM7-1-0" env:mustUnderstand="1">{RTransactionID}</mm7:TransactionID></env:Header><env:Body><DeliveryReportReq xmlns="http://www.3gpp.org/ftp/Specs/archive/23_series/23.140/schema/REL-6-MM7-1-0"><MM7Version>{MM7Version}</MM7Version><MMSRelayServerID>902500</MMSRelayServerID><MessageID>{MessageID}</MessageID><Recipient><Number>{DestAddr0}</Number></Recipient><Sender>{SrcAddr}</Sender><TimeStamp>2014-3-24T10:34:50+08:00</TimeStamp><MMStatus>{RStatusText}</MMStatus><MMSStatusErrorCode>{RStatusCode}</MMSStatusErrorCode><StatusText>OK</StatusText></DeliveryReportReq></env:Body></env:Envelope>'.format(**dic)
     # print "report: ", msgTmpl
     return msgTmpl
-
-def sendReport(msg):
-    http_client = httpclient.AsyncHTTPClient()
-    def handle_request(response):
-        if response.error:
-            print "Error:", response.error
-        # else:
-        #     print response.body
-    http_client.fetch("http://10.116.40.67:8888/", handle_request, method='POST', user_agent='MMSC Simulator', body=msg, headers={'soapAction': '""', 'x-mmsc-msg-from': 'mm7', 'Mime-Version': '1.0', 'Content-Type': 'text/xml; charset=utf-8', 'Content-Transfer-Encoding':'8bit'})
 
 
 def getContents(contents):
@@ -58,6 +53,14 @@ def respMsg(msg):
 
 
 class MainHandler(tornado.web.RequestHandler):
+
+    def initialize(self, queue):
+        # print "get a client", dir(client)
+        self.queue = queue
+        if not self.queue:
+            print "no queue"
+            raise
+
     def get(self):
         self.write("Hello, world")
     def post(self):
@@ -72,7 +75,29 @@ class MainHandler(tornado.web.RequestHandler):
         # print "resp: ", resp, len(resp)
         self.set_header('Content-Type', 'text/xml; charset=UTF-8')
         self.render("resp.xml", **resp)
-        sendReport(report)
+
+        print("put report")
+        self.queue.put(report)
+        # self.__sendReport(report)
+
+    def __sendReport(self,msg):
+        def handle_report(response):
+            if response.error:
+                print "Error report Ack:", response.error
+
+            # print "Report Ack Body", response.body
+
+        if not hasattr(self, "client1") or not self.client1:
+            try:
+                print "hasattr:", hasattr(self, "client1")
+                print "client1:", self.client1
+            except:
+                pass
+            print "get new client"
+            self.client1 = httpclient.AsyncHTTPClient()
+
+        self.client1.fetch(UMA_MMS_URL, handle_report, method='POST', user_agent='MMSC Simulator', body=msg, headers={'soapAction': '""', 'x-mmsc-msg-from': 'mm7', 'Mime-Version': '1.0', 'Content-Type': 'text/xml; charset=utf-8', 'Content-Transfer-Encoding':'8bit', 'Connection': 'Keep-alive'})
+
 
 class XlsHandler(tornado.web.RequestHandler):
     def get_argument(self, name, default=[], strip=True):
@@ -108,3 +133,12 @@ class XlsHandler(tornado.web.RequestHandler):
         except Exception as e:
             print "Error file:", e
             self.write("failed")
+
+class WasHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        print "get was"
+        self.render("templates/was/params.xml")
+    def post(self):
+        print "post was"
+        self.render("templates/was/params.xml")

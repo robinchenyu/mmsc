@@ -7,3 +7,5 @@ settings = {
     # "xsrf_cookies": True,
     "debug": True,
 }
+
+UMA_MMS_URL="http://10.116.40.67:8888/"
